@@ -34,9 +34,7 @@ def check_user (request) :
       
       if len(token) == 0 or token.access_token != access_token :
         # Validate access token with Steemconnect
-        c = Client(
-          client_id = STEEMCONNECT_CLIENT_ID,
-          client_secret = SECRET_KEY)
+        c = Client(access_token='access_token')
 
         try: 
           user = c.me()
