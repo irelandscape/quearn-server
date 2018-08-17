@@ -31,7 +31,7 @@ def check_user (request) :
 
       token = AccessToken.objects.filter(username = username)
       
-      if len(token)  == 0 or token.access_token != access_token :
+      if len(token) == 0 or token.access_token != access_token :
         # Validate access token with Steemconnect
         c = Client(
           client_id = CLIENT_ID,
