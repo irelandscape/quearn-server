@@ -6,7 +6,7 @@ from rest_framework.parsers import JSONParser
 from steem.models import SteemUser
 from steem.serializers import SteemUserSerializer
 from steemconnect.client import Client
-from steem.config import CLIENT_ID, CLIENT_SECRET
+from steem.secrets import CLIENT_ID, CLIENT_SECRET
 
 def check_user (request) :
   def decorator (func) :
