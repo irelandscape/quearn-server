@@ -6,7 +6,8 @@ from rest_framework.parsers import JSONParser
 from steem.models import SteemUser
 from steem.serializers import SteemUserSerializer
 from steemconnect.client import Client
-from steem.secrets import CLIENT_ID, CLIENT_SECRET
+from my_secrets.secrets import SECRET_KEY
+from steemqa_server.settings import STEEMCONNECT_CLIENT_ID
 
 def check_user (request) :
   def decorator (func) :
@@ -34,8 +35,8 @@ def check_user (request) :
       if len(token) == 0 or token.access_token != access_token :
         # Validate access token with Steemconnect
         c = Client(
-          client_id = CLIENT_ID,
-          client_secret = CLIENT_SECRET)
+          client_id = STEEMCONNECT_CLIENT_ID,
+          client_secret = SECRET_KEY)
 
         try: 
           user = c.me()

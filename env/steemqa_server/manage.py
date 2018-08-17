@@ -3,6 +3,8 @@ import os
 import sys
 
 if __name__ == '__main__':
+    from django_secrets.startup import check
+    check()
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'steemqa_server.settings')
     try:
         from django.core.management import execute_from_command_line
