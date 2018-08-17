@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from steem.models import SteemUser, LANGUAGE_CHOICES, STYLE_CHOICES
+from steem.models import SteemUser
 
 class SteemUserSerializer (serializers.ModelSerializer) :
   class Meta :
