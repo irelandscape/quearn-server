@@ -71,6 +71,7 @@ def api_steemusers (request, user_valid = False) :
 
 
 @csrf_exempt
+@check_user('request')
 def api_steemuser_details (request, pk):
   try:
     user = SteemUser.objects.get(pk=pk)
