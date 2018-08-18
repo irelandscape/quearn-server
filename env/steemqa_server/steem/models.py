@@ -29,6 +29,7 @@ class AccessToken (models.Model) :
 class Topic (models.Model) :
   topic = models.CharField(
     max_length = 80,
+    unique = True,
     db_index = True)
 
   parent = models.ForeignKey(
@@ -41,6 +42,12 @@ class Topic (models.Model) :
   question_count = models.PositiveIntegerField(
     help_text = 'The number of existing questions associated with this topics',
     default = 0)
+
+  def __str__ (self) :
+    return self.topic
+
+  class Meta :
+    ordering = ('topic', )
 
 class FavouriteTopic (models.Model) :
   user = models.ForeignKey(
