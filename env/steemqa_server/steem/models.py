@@ -18,6 +18,7 @@ class AccessToken (models.Model) :
     db_index = True)
 
   token = models.CharField(
+    help_text = 'SHA-512 encrypted version of Steemconnect access token',
     max_length = 160,
     db_index = True)
 
