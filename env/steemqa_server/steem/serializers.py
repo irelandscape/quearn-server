@@ -15,6 +15,7 @@ class TopicSerializer (serializers.ModelSerializer) :
     fields = '__all__'
 
 class FavouriteTopicSerializer (serializers.ModelSerializer) :
+  class Meta :
     model = FavouriteTopic
     fields = '__all__'
 

@@ -20,18 +20,16 @@ def check_user (func) :
     username = ''
     access_token = ''
     request = args[0]
-    if request.method == 'GET' and 'username' in request.GET and 'access_token' in request.GET :
-      username = request.GET['username']
-      access_token = request.GET['access_token']
-    if request.method == 'POST' and 'username' in request.POST and 'access_token' in request.POST :
-      username = request.POST['username']
-      access_token = request.POST['access_token']
-    if request.method == 'PATCH' and 'username' in request.PATCH and 'access_token' in request.PATCH :
-      username = request.PATCH['username']
-      access_token = request.PATCH['access_token']
-    if request.method == 'DELETE' and 'username' in request.DELETE and 'access_token' in request.DELETE :
-      username = request.DELETE['username']
-      access_token = request.DELETE['access_token']
+    if request.method == 'GET' or request.method == 'DELETE':
+      if 'username' in request.GET :
+        username = request.GET['username']
+      if 'access_token' in request.GET :
+        access_token = request.GET['access_token']
+    else :
+      if 'username' in request.data :
+        username = request.data['username']
+      if 'access_token' in request.data :
+        access_token = request.data['access_token']
 
     if username == '' or access_token == '' :
       return HttpResponse(status=403)
@@ -92,6 +90,24 @@ def favourite_topic (request, user = None):
     topics = FavouriteTopic.objects.filter(user = user)
     serializer = FavouriteTopicSerializer(topics, many = True)
     return JsonResponse(serializer.data, safe = False)
+  elif request.method == 'POST':
+    # First check if user has already subscribed to this topic
+    topics = FavouriteTopic.objects.filter(user = user,
+      topic_id = request.data['topic'])
+    if len(topics) != 0 :
+      return HttpResponse(status=400)
+
+    topic = FavouriteTopic.objects.create(user = user,
+      topic_id = request.data['topic'])
+    serializer = FavouriteTopicSerializer(topic)
+    return JsonResponse(serializer.data, safe=False)
+  elif request.method == 'DELETE' :
+    topics = FavouriteTopic.objects.filter(user = user,
+      topic_id = request.GET['topic'])
+    if len(topics) == 0 :
+      return HttpResponse(status=404)
+    topics[0].delete()
+    return HttpResponse(status=200)
   else :
       return HttpResponse(status=405)
 
@@ -103,4 +119,4 @@ def topic (request) :
     serializer = TopicSerializer(topics, many = True)
     return JsonResponse(serializer.data, safe = False)
   else :
-      return HttpResponse(status=405)
+    return HttpResponse(status=405)
