@@ -1,0 +1,88 @@
+#!/usr/bin/env python3
+
+import logging
+import logging.handlers
+import http.client
+import pathlib
+import sys
+import json
+from beem import discussions
+
+STEEMQA_REST_API_URL = '127.0.0.1:8000'
+STEEMQA_REST_API_USE_HTTPS = False
+LOG_FOLDER = '~/.steemqa_scraper/logs'
+
+class Scraper :
+  def __init__ (self,
+                logger,
+                rest_api_url,
+                rest_api_use_https) :
+
+    self.logger = logger
+    self.rest_api_url = rest_api_url
+    self.rest_api_use_https = rest_api_use_https
+
+    self._get_config()
+    self._get_scraper()
+
+  def _get_config (self) :
+    if self.rest_api_use_https :
+      rest_conn = http.client.HTTPSConnection(self.rest_api_url, timeout = 5)
+    else :
+      rest_conn = http.client.HTTPConnection(self.rest_api_url, timeout = 5)
+    rest_conn.request('GET', '/config/')
+    response = rest_conn.getresponse()
+    data = response.read().decode('utf-8')
+    if response.status != 200 :
+      self.logger.error('Failed to retrieve config from server. Got status {}'.format(response.status))
+      sys.exit(-1)
+    self.config = json.loads(data)
+
+  def _get_scraper (self) :
+    if self.rest_api_use_https :
+      rest_conn = http.client.HTTPSConnection(self.rest_api_url, timeout = 5)
+    else :
+      rest_conn = http.client.HTTPConnection(self.rest_api_url, timeout = 5)
+    rest_conn.request('GET', '/scraper/')
+    response = rest_conn.getresponse()
+    data = response.read().decode('utf-8')
+    if response.status != 200 :
+      self.logger.error('Failed to retrieve scraper from server. Got status {}'.format(response.status))
+      sys.exit(-1)
+    scraper = json.loads(data)
+    import pdb
+    pdb.set_trace()
+    self.tag = scraper['tag']
+    self.nodes = scraper['nodes'].split(',')
+
+if __name__ == '__main__' :
+  logger = logging.getLogger('steemqa_scraper')
+  logger.setLevel(logging.DEBUG)
+
+  pathlib.Path(LOG_FOLDER).mkdir(parents = True, exist_ok = True)
+  handler = logging.handlers.RotatingFileHandler("{}/steemqa_scraper.log".format(LOG_FOLDER), 
+    maxBytes=50000, 
+    backupCount=5)
+
+  formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+  handler.setFormatter(formatter)
+  logger.addHandler(handler)
+
+  scraper = Scraper(logger,
+                    STEEMQA_REST_API_URL,
+                    STEEMQA_REST_API_USE_HTTPS)
+
+
+  #q = discussions.Query(limit = 5, tag = 'steemstem')
+  #for h in discussions.Discussions_by_created(q) :
+  #  author = h.author
+  #  permlink = h.permlink
+  #  print(h)
+
+  #print('AND...')
+  #q = discussions.Query(limit = 5, 
+  #                      tag = 'steemstem',
+  #                      start_author = author,
+  #                      start_permlink = permlink)
+  #for h in discussions.Discussions_by_created(q) :
+  #  print(h)
