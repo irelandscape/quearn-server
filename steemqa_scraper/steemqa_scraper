@@ -6,11 +6,13 @@ import http.client
 import pathlib
 import sys
 import json
+import urllib
+import dateparser
 from beem import discussions
+from datetime import datetime
 
 STEEMQA_REST_API_URL = '127.0.0.1:8000'
 STEEMQA_REST_API_USE_HTTPS = False
-LOG_FOLDER = '~/.steemqa_scraper/logs'
 
 class Scraper :
   def __init__ (self,
@@ -24,53 +26,195 @@ class Scraper :
 
     self._get_config()
     self._get_scraper()
+    self._get_latest_activity()
+    self.current_node = self.nodes[0]
+
+  def run (self) :
+    author = None
+    permlink = None
+    while True :
+      if author is None :
+        q = discussions.Query(limit = self.scraper['post_batch_size'], 
+                              tag = self.config['tag'])
+      else :
+        q = discussions.Query(limit = self.scraper['post_batch_size'], 
+                              tag = self.config['tag'],
+                              start_author = author,
+                              start_permlink = permlink)
+      posts = discussions.Discussions_by_active(q)
+      if len(posts) == 0 :
+        break
+      for post in posts :
+        print(post.permlink)
+
+        if self.latest_activity is not None and post['active'] < self.latest_activity :
+          return
+
+        if post.author == author and post.permlink == permlink :
+          return
+
+        json = post.json()
+        params = {
+          'created': json['created'],
+          'author': post.author,
+          'title': post.title,
+          'permlink': post.permlink,
+          'net_votes': post.get_votes(),
+          'active': json['active'],
+          'tag1': post.json_metadata['tags'][0],
+          'net_votes': len(post.get_votes()),
+          'author_payout_value': post.get_author_rewards()['total_payout_SBD'].amount
+        }
+        if len(post.json_metadata['tags']) > 1 :
+          params['tag2'] = post.json_metadata['tags'][1]
+        if len(post.json_metadata['tags']) > 2 :
+          params['tag3'] = post.json_metadata['tags'][2]
+        if len(post.json_metadata['tags']) > 3 :
+          params['tag4'] = post.json_metadata['tags'][3]
+        if len(post.json_metadata['tags']) > 4 :
+          params['tag5'] = post.json_metadata['tags'][4]
+
+        rc = self._put('questions', 
+          params,
+          {
+            'author': post.author,
+            'permlink': post.permlink
+          })
+        if rc >= 200 and rc <= 299 :
+          self._patch('scrapers',
+            self.scraper['id'],
+            {
+              'oldest_author': post.author,
+              'oldest_permlink': post.permlink
+            })
+        else :
+          self.logger.error('Failed to post question for {} / {}'.format(post.author, post.permlink))
+
+        author = post.author
+        permlink = post.permlink
 
   def _get_config (self) :
-    if self.rest_api_use_https :
-      rest_conn = http.client.HTTPSConnection(self.rest_api_url, timeout = 5)
-    else :
-      rest_conn = http.client.HTTPConnection(self.rest_api_url, timeout = 5)
-    rest_conn.request('GET', '/config/')
-    response = rest_conn.getresponse()
-    data = response.read().decode('utf-8')
-    if response.status != 200 :
-      self.logger.error('Failed to retrieve config from server. Got status {}'.format(response.status))
+    rc, self.config = self._get('configs')
+    if rc != 200 :
       sys.exit(-1)
-    self.config = json.loads(data)
+
+    self.config = self.config[0]
 
   def _get_scraper (self) :
+    rc, self.scraper = self._get('scrapers')
+    if rc != 200 :
+      return rc
+
+    self.scraper = self.scraper[0]
+    self.nodes = self.scraper['nodes'].split(',')
+
+  def _get_latest_activity (self) :
+    rc, q_activity = self._get('questions',
+      filters = {
+        'ordering': '-active',
+        'limit': 1
+      })
+    if rc != 200 :
+      sys.exit(-1)
+
+    activity = None
+    if len(q_activity) > 0 :
+      activity = dateparser.parse(q_activity[0]['active'])
+
+    rc, a_activity = self._get('answers',
+      filters = {
+        'ordering': '-active',
+        'limit': 1
+      })
+    if rc != 200 :
+      sys.exit(-1)
+
+    activity2 = None
+    if len(a_activity) > 0 :
+      activity2 = dateparser.parse(a_activity[0]['active'])
+
+    if activity == None :
+      self.latest_activity = activity2
+    elif activity2 == None :
+      self.latest_activity = activity
+    else :
+      self.latest_activity = min(activity, activity2)
+
+  def _get (self, mo, filters = None) :
     if self.rest_api_use_https :
       rest_conn = http.client.HTTPSConnection(self.rest_api_url, timeout = 5)
     else :
       rest_conn = http.client.HTTPConnection(self.rest_api_url, timeout = 5)
-    rest_conn.request('GET', '/scraper/')
+    if filters :
+      rest_conn.request('GET', 
+                        '/{}/?{}'.format(mo, urllib.parse.urlencode(filters)))
+    else :
+      rest_conn.request('GET', '/{}/'.format(mo))
     response = rest_conn.getresponse()
     data = response.read().decode('utf-8')
     if response.status != 200 :
-      self.logger.error('Failed to retrieve scraper from server. Got status {}'.format(response.status))
-      sys.exit(-1)
-    scraper = json.loads(data)
-    import pdb
-    pdb.set_trace()
-    self.tag = scraper['tag']
-    self.nodes = scraper['nodes'].split(',')
+      self.logger.error('Failed to retrieve {} from server. Got status {}'.format(mo, response.status))
+    return response.status, json.loads(data)
+
+  def _put (self, mo, params, filters = None) :
+    if self.rest_api_use_https :
+      rest_conn = http.client.HTTPSConnection(self.rest_api_url, timeout = 5)
+    else :
+      rest_conn = http.client.HTTPConnection(self.rest_api_url, timeout = 5)
+
+    headers = {'Content-type': 'application/json'}
+    if filters :
+      rest_conn.request('PUT', 
+                        '/{}/?{}'.format(mo, urllib.parse.urlencode(filters)),
+                        json.dumps(params),
+                        headers)
+    else :
+      rest_conn.request('PUT', 
+                        '/{}/'.format(mo),
+                        json.dumps(params),
+                        headers)
+
+    response = rest_conn.getresponse()
+    if response.status != 200 :
+      self.logger.error('Failed to complete PUT request. Got status {}'.format(response.status))
+
+    return response.status
+
+  def _patch (self, mo, pk, params) :
+    if self.rest_api_use_https :
+      rest_conn = http.client.HTTPSConnection(self.rest_api_url, timeout = 5)
+    else :
+      rest_conn = http.client.HTTPConnection(self.rest_api_url, timeout = 5)
+
+    headers = {'Content-type': 'application/json'}
+    rest_conn.request('PATCH', 
+                      '/{}/{}/'.format(mo, pk),
+                      json.dumps(params),
+                      headers)
+
+    response = rest_conn.getresponse()
+    if response.status != 200 :
+      self.logger.error('Failed to complete POST request. Got status {}'.format(response.status))
 
 if __name__ == '__main__' :
-  logger = logging.getLogger('steemqa_scraper')
+  logger = logging.getLogger(sys.argv[0])
   logger.setLevel(logging.DEBUG)
 
-  pathlib.Path(LOG_FOLDER).mkdir(parents = True, exist_ok = True)
-  handler = logging.handlers.RotatingFileHandler("{}/steemqa_scraper.log".format(LOG_FOLDER), 
-    maxBytes=50000, 
-    backupCount=5)
+  handler = logging.handlers.SysLogHandler(address='/dev/log')
 
   formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
   handler.setFormatter(formatter)
   logger.addHandler(handler)
 
-  scraper = Scraper(logger,
-                    STEEMQA_REST_API_URL,
-                    STEEMQA_REST_API_USE_HTTPS)
+  logger.info('STARTING')
+
+  try :
+    scraper = Scraper(logger,
+                      STEEMQA_REST_API_URL,
+                      STEEMQA_REST_API_USE_HTTPS)
+    scraper.run()
+  except :
+    logger.exception('EXCEPTION:')
 
 
   #q = discussions.Query(limit = 5, tag = 'steemstem')

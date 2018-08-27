@@ -2,15 +2,22 @@ from django.db import models
 from django.dispatch import receiver
 from django.db.models.signals import post_save, post_delete
 
+MAX_TAG_LENGTH = 40
+
 class Config (models.Model) :
+  appName = models.CharField (
+    max_length = 40,
+    blank = True,
+    null = True)
+
   tag = models.CharField (
     help_text = 'The main SteemQA application tag',
-    max_length = 40)
+    max_length = MAX_TAG_LENGTH)
 
 class Scraper (models.Model) :
   nodes = models.TextField (
     help_text = 'The steem nodes to use (in order of priority)',
-    default = 'gtg.steem.house:8090,steemd.minnowsupportproject.org,steemd.privex.io,steemd.steemgigs.org,steemd.steemit.com,rpc.curiesteem.com,rpc.steemliberator.com,rpc.steemviz.com')
+    default = 'api.steemit.com,steemd.minnowsupportproject.org,steemd.privex.io,steemd.steemgigs.org,steemd.steemit.com,rpc.curiesteem.com,rpc.steemliberator.com,rpc.steemviz.com')
 
   oldest_author = models.TextField (
     blank = True,
@@ -19,6 +26,14 @@ class Scraper (models.Model) :
   oldest_permlink = models.TextField (
     blank = True,
     null = True)
+
+  new_posts_wait_time = models.PositiveIntegerField (
+    help_text = 'The amount of time (in seconds) to wait before fetching new posts',
+    default = 60)
+
+  post_batch_size = models.PositiveIntegerField (
+    help_text = 'The number of posts to get from the Steemd node per operation',
+    default = 50)
 
 
 class SteemUser (models.Model) :
@@ -30,6 +45,9 @@ class SteemUser (models.Model) :
 
   class Meta:
     ordering = ('username',)
+
+  def __str__ (self) :
+    return self.username
 
 class AccessToken (models.Model) :
   username = models.CharField(
@@ -47,7 +65,7 @@ class AccessToken (models.Model) :
 
 class Topic (models.Model) :
   topic = models.CharField(
-    max_length = 80,
+    max_length = 40,
     unique = True,
     db_index = True)
 
@@ -57,10 +75,6 @@ class Topic (models.Model) :
     on_delete=models.CASCADE,
     blank = True,
     null = True)
-
-  question_count = models.PositiveIntegerField(
-    help_text = 'The number of existing questions associated with this topics',
-    default = 0)
 
   def __str__ (self) :
     return self.topic
@@ -84,16 +98,60 @@ class Discussion (models.Model) :
     max_length = 40,
     db_index = True)
 
+  title = models.CharField (
+    max_length = 128,
+    db_index = True)
+
   permlink = models.CharField(
     max_length = 160,
     db_index = True)
 
-  upvotes = models.PositiveIntegerField(
-    default = 0,
-    db_index = True)
+  active = models.DateTimeField(
+    help_text = 'The last time this content was “touched” by voting or reply',
+    blank = True,
+    null = True)
+
+  # Must have at the main tag. Questions must also have a second tag for the topic
+  tag1 = models.CharField (
+    max_length = MAX_TAG_LENGTH)
+
+  tag2 = models.CharField (
+    max_length = MAX_TAG_LENGTH,
+    blank = True,
+    null = True)
+
+  tag3 = models.CharField (
+    max_length = MAX_TAG_LENGTH,
+    blank = True,
+    null = True)
+
+  tag4 = models.CharField (
+    max_length = MAX_TAG_LENGTH,
+    blank = True,
+    null = True)
+
+  tag5 = models.CharField (
+    max_length = MAX_TAG_LENGTH,
+    blank = True,
+    null = True)
+
+  flagged = models.BooleanField (
+    help_text = 'Indicates if this item has been flagged by moderators',
+    default = False)
+
+  net_votes = models.PositiveIntegerField (
+    help_text = 'Net positive votes',
+    default = 0)
+
+  author_payout_value = models.FloatField (
+    help_text = 'Tracks the total payout (in SBD) this content has received over time',
+    default = 0)
 
   class Meta :
     abstract = True
+
+  def __str__ (self) :
+    return self.title
 
 class Question (Discussion) :
   topic = models.ForeignKey(

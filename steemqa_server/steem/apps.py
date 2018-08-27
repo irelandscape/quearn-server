@@ -6,4 +6,5 @@ class SteemConfig(AppConfig):
     verbose_name = 'Steem Application'
 
     def ready (self) :
+      return # Skip signals for now
       import steem.signals
