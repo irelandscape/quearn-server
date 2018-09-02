@@ -329,6 +329,15 @@ def question_count (request) :
   }, 
   safe = False)
 
+class FavouriteTopicPost (generics.CreateAPIView) :
+  queryset = FavouriteTopic.objects.all()
+  serializer_class = FavouriteTopicSerializer
+
+  @check_user
+  def post (self, request, *args, **kwargs) :
+    request.data['user'] = kwargs['user'].id
+    return self.create(request, *args, **kwargs)
+
 class AnswerView (generics.ListAPIView,
                     generics.CreateAPIView,
                     generics.UpdateAPIView) :

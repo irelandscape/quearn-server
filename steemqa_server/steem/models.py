@@ -19,21 +19,9 @@ class Scraper (models.Model) :
     help_text = 'The steem nodes to use (in order of priority)',
     default = 'api.steemit.com,steemd.minnowsupportproject.org,steemd.privex.io,steemd.steemgigs.org,steemd.steemit.com,rpc.curiesteem.com,rpc.steemliberator.com,rpc.steemviz.com')
 
-  oldest_author = models.TextField (
+  block_nbr = models.PositiveIntegerField (
     blank = True,
     null = True)
-
-  oldest_permlink = models.TextField (
-    blank = True,
-    null = True)
-
-  new_posts_wait_time = models.PositiveIntegerField (
-    help_text = 'The amount of time (in seconds) to wait before fetching new posts',
-    default = 60)
-
-  post_batch_size = models.PositiveIntegerField (
-    help_text = 'The number of posts to get from the Steemd node per operation',
-    default = 50)
 
 
 class SteemUser (models.Model) :

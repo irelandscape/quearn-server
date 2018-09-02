@@ -8,7 +8,10 @@ import sys
 import json
 import urllib
 import dateparser
+import re
 from beem import discussions
+from beem import blockchain
+from beem.comment import Comment
 from datetime import datetime
 
 STEEMQA_REST_API_URL = '127.0.0.1:8000'
@@ -29,69 +32,80 @@ class Scraper :
     self._get_latest_activity()
     self.current_node = self.nodes[0]
 
+  def _update_block_nbr (self, block_nbr) :
+      self._patch('scrapers',
+        self.scraper['id'],
+        {
+          'block_nbr': block_nbr
+        })
+
   def run (self) :
-    author = None
-    permlink = None
-    while True :
-      if author is None :
-        q = discussions.Query(limit = self.scraper['post_batch_size'], 
-                              tag = self.config['tag'])
+    re_question = re.compile('^(?!A *:).*?$')
+    re_answer = re.compile('^ *A *:.*')
+
+    chain = blockchain.Blockchain()
+    for op in chain.stream(opNames = ['comment'],
+                           start = self.scraper['block_nbr']) :
+      try :
+        json_metadata = json.loads(op['json_metadata'])
+        if type(json_metadata) == type('') :
+          # Issue with beem?
+          json_metadata = json.loads(json_metadata)
+      except:
+        self._update_block_nbr(op['block_num'])
+        continue
+
+      if 'tags' not in json_metadata :
+        self._update_block_nbr(op['block_num'])
+        continue
+
+      tags = json_metadata['tags']
+
+      if self.config['tag'] not in tags :
+        self._update_block_nbr(op['block_num'])
+        continue
+
+      title = op['title'].strip()
+      if re_question.match(title) :
+        mo = 'questions'
+      elif re_answer.match(title) :
+        mo = 'answers'
       else :
-        q = discussions.Query(limit = self.scraper['post_batch_size'], 
-                              tag = self.config['tag'],
-                              start_author = author,
-                              start_permlink = permlink)
-      posts = discussions.Discussions_by_active(q)
-      if len(posts) == 0 :
-        break
-      for post in posts :
-        print(post.permlink)
+        self._update_block_nbr(op['block_num'])
+        continue
 
-        if self.latest_activity is not None and post['active'] < self.latest_activity :
-          return
+      self.logger.debug('Processing {} / {}'.format(op['author'], op['permlink']))
+      post = Comment("@{}/{}".format(op['author'], op['permlink']))
 
-        if post.author == author and post.permlink == permlink :
-          return
+      params = {
+        'created': post['created'].isoformat(),
+        'author': post.author,
+        'title': title,
+        'permlink': post.permlink,
+        'active': post['active'].isoformat(),
+        'tag1': tags[0],
+        'net_votes': len(post.get_votes()),
+        'author_payout_value': post.get_author_rewards()['total_payout_SBD'].amount
+      }
+      if len(tags) > 1 :
+        params['tag2'] = tags[1]
+      if len(tags) > 2 :
+        params['tag3'] = tags[2]
+      if len(tags) > 3 :
+        params['tag4'] = tags[3]
+      if len(tags) > 4 :
+        params['tag5'] = tags[4]
 
-        json = post.json()
-        params = {
-          'created': json['created'],
+      rc = self._put(mo,
+        params,
+        {
           'author': post.author,
-          'title': post.title,
-          'permlink': post.permlink,
-          'net_votes': post.get_votes(),
-          'active': json['active'],
-          'tag1': post.json_metadata['tags'][0],
-          'net_votes': len(post.get_votes()),
-          'author_payout_value': post.get_author_rewards()['total_payout_SBD'].amount
-        }
-        if len(post.json_metadata['tags']) > 1 :
-          params['tag2'] = post.json_metadata['tags'][1]
-        if len(post.json_metadata['tags']) > 2 :
-          params['tag3'] = post.json_metadata['tags'][2]
-        if len(post.json_metadata['tags']) > 3 :
-          params['tag4'] = post.json_metadata['tags'][3]
-        if len(post.json_metadata['tags']) > 4 :
-          params['tag5'] = post.json_metadata['tags'][4]
-
-        rc = self._put('questions', 
-          params,
-          {
-            'author': post.author,
-            'permlink': post.permlink
-          })
-        if rc >= 200 and rc <= 299 :
-          self._patch('scrapers',
-            self.scraper['id'],
-            {
-              'oldest_author': post.author,
-              'oldest_permlink': post.permlink
-            })
-        else :
-          self.logger.error('Failed to post question for {} / {}'.format(post.author, post.permlink))
-
-        author = post.author
-        permlink = post.permlink
+          'permlink': post.permlink
+        })
+      if rc >= 200 and rc <= 299 :
+        self._update_block_nbr(op['block_num'])
+      else :
+        self.logger.error('Failed to post question for {} / {}'.format(post.author, post.permlink))
 
   def _get_config (self) :
     rc, self.config = self._get('configs')
@@ -208,13 +222,17 @@ if __name__ == '__main__' :
 
   logger.info('STARTING')
 
-  try :
-    scraper = Scraper(logger,
-                      STEEMQA_REST_API_URL,
-                      STEEMQA_REST_API_USE_HTTPS)
-    scraper.run()
-  except :
-    logger.exception('EXCEPTION:')
+  #try :
+  #  scraper = Scraper(logger,
+  #                    STEEMQA_REST_API_URL,
+  #                    STEEMQA_REST_API_USE_HTTPS)
+  #  scraper.run()
+  #except :
+  #  logger.exception('EXCEPTION:')
+  scraper = Scraper(logger,
+                    STEEMQA_REST_API_URL,
+                    STEEMQA_REST_API_USE_HTTPS)
+  scraper.run()
 
 
   #q = discussions.Query(limit = 5, tag = 'steemstem')
