@@ -146,6 +146,10 @@ class Question (Discussion) :
     Topic,
     on_delete=models.CASCADE)
 
+  answer_count = models.PositiveIntegerField (
+    blank = True,
+    null = True)
+
 class Answer (Discussion) :
   question = models.ForeignKey(
     Question,
