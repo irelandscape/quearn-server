@@ -15,7 +15,6 @@ from rest_framework import generics, filters
 import json
 import urllib
 import dateparser
-from beem import discussions
 from datetime import datetime
 
 def sha512 (token) :
@@ -406,52 +405,61 @@ def answer_count (request) :
 class NewQuestion (generics.CreateAPIView) :
   @check_user
   def post (self, request, *args, **kwargs) :
-    if 'permlink' not in request.data :
+    if 'permlink' not in request.data or \
+        'tags' not in request.data or \
+        'title' not in request.data :
       return HttpResponse(status=400)
-    q = discussions.Query(limit = 1,
-                          start_permlink = request.data['permlink'],
-                          start_author = kwargs['user'].username,
-                          tag = kwargs['user'].username)
-    posts = discussions.Discussions_by_blog(q)
-    post = posts[0]
-    json = post.json()
-    if len(post.json_metadata['tags']) > 1 :
-      tag2 = post.json_metadata['tags'][1]
-    else :
-      tag2 = None
-    if len(post.json_metadata['tags']) > 2 :
-      tag3 = post.json_metadata['tags'][2]
-    else :
-      tag3 = None
-    if len(post.json_metadata['tags']) > 3 :
-      tag4 = post.json_metadata['tags'][3]
-    else :
-      tag4 = None
-    if len(post.json_metadata['tags']) > 4 :
-      tag5 = post.json_metadata['tags'][4]
-    else :
-      tag5 = None
-    topic = QuestionSerializer.find_topic((post.json_metadata['tags'][0],
-      tag2,
-      tag3,
-      tag4,
-      tag5))
+
+    topic = QuestionSerializer.find_topic(request.data['tags'])
 
     if topic is None :
       return HttpResponse(status=400)
 
-    question = Question(created = json['created'],
-      author = post.author,
-      title = post.title,
-      permlink = post.permlink,
-      active = dateparser.parse(json['active']),
-      tag1 = post.json_metadata['tags'][0],
-      tag2 = tag2,
-      tag3 = tag3,
-      tag4 = tag4,
-      tag5 = tag5,
-      net_votes = len(post.get_votes()),
-      author_payout_value = post.get_author_rewards()['total_payout_SBD'].amount,
+    now = datetime.now()
+    question = Question(created = now,
+      author = kwargs['user'].username,
+      title = request.data['title'],
+      permlink = request.data['permlink'],
+      active = now,
+      tag1 = request.data['tags'][0] if len(request.data['tags']) >= 1 else None,
+      tag2 = request.data['tags'][1] if len(request.data['tags']) >= 2 else None,
+      tag3 = request.data['tags'][2] if len(request.data['tags']) >= 3 else None,
+      tag4 = request.data['tags'][3] if len(request.data['tags']) >= 4 else None,
+      tag5 = request.data['tags'][4] if len(request.data['tags']) >= 5 else None,
       topic = topic)
     question.save()
+    return HttpResponse(status=204)
+
+class NewAnswer (generics.CreateAPIView) :
+  @check_user
+  def post (self, request, *args, **kwargs) :
+    if 'permlink' not in request.data or \
+        'question_author' not in request.data or \
+        'question_permlink' not in request.data or \
+        'tags' not in request.data or \
+        'title' not in request.data :
+      return HttpResponse(status=400)
+
+    answers = Answer.objects.filter(author = kwargs['user'].username).filter(question__permlink = request.data['question_permlink']).filter(question__author = request.data['question_author'])
+
+    if len(answers) != 0 :
+        return HttpResponse(status=400) # User already answered this question
+
+    questions = Question.objects.filter(permlink = request.data['question_permlink']).filter(author = request.data['question_author'])
+    if len(questions) == 0 :
+        return HttpResponse(status=400)
+
+    now = datetime.now()
+    answer = Answer(question = questions[0],
+      created = now,
+      author = kwargs['user'].username,
+      title = request.data['title'],
+      permlink = request.data['permlink'],
+      active = now,
+      tag1 = request.data['tags'][0] if len(request.data['tags']) >= 1 else None,
+      tag2 = request.data['tags'][1] if len(request.data['tags']) >= 2 else None,
+      tag3 = request.data['tags'][2] if len(request.data['tags']) >= 3 else None,
+      tag4 = request.data['tags'][3] if len(request.data['tags']) >= 4 else None,
+      tag5 = request.data['tags'][4] if len(request.data['tags']) >= 5 else None)
+    answer.save()
     return HttpResponse(status=204)

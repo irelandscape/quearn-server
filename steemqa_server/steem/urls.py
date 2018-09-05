@@ -14,4 +14,5 @@ urlpatterns = [
   url(r'^newquestion$', views.NewQuestion.as_view()),
   url(r'^answers/$', views.AnswerView.as_view()),
   url(r'^answers/count$', views.answer_count),
+  url(r'^newanswer$', views.NewAnswer.as_view()),
 ]
