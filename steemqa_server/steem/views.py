@@ -270,7 +270,7 @@ class QuestionView (generics.ListAPIView,
                     generics.UpdateAPIView) :
   serializer_class = QuestionSerializer
   filter_backends = (filters.OrderingFilter,)
-  ordering_fields = ('created', 'active',)
+  ordering_fields = ('created', 'active', 'net_votes')
   allowed_filters = ['id', 'author', 'permlink']
 
   def get_queryset (self) :
@@ -383,7 +383,7 @@ class AnswerView (generics.ListAPIView,
   def put(self, request, *args, **kwargs) :
     if 'topic' not in request.data :
       print(request.data)
-      topic = AnswerSerializer.find_topic((request.data.get('tag1', None),
+      topic = QuestionSerializer.find_topic((request.data.get('tag1', None),
         request.data.get('tag2', None),
         request.data.get('tag3', None),
         request.data.get('tag4', None),

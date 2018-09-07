@@ -14,6 +14,12 @@ class Config (models.Model) :
     help_text = 'The main SteemQA application tag',
     max_length = MAX_TAG_LENGTH)
 
+  carousel_slide_count = models.PositiveIntegerField (
+    help_text = 'The number of questions to load in the home page carousel',
+    default = 5,
+    blank = True,
+    null = True)
+
 class Scraper (models.Model) :
   nodes = models.TextField (
     help_text = 'The steem nodes to use (in order of priority)',
