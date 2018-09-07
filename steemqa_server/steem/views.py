@@ -11,11 +11,14 @@ from steemconnect.client import Client
 from steemqa_server.settings import STEEMCONNECT_CLIENT_ID
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
-from rest_framework import generics, filters
+from rest_framework import generics
+from rest_framework.filters import OrderingFilter
 import json
 import urllib
 import dateparser
 from datetime import datetime
+import django_filters
+from django_filters import rest_framework
 
 def sha512 (token) :
   hash = hashlib.sha512(token.encode('utf-8'))
@@ -265,21 +268,25 @@ def topic (request) :
   else :
     return HttpResponse(status=405)
 
+class QuestionFilter (rest_framework.FilterSet) :
+    created_gte = django_filters.IsoDateTimeFilter(
+      field_name = 'created',
+      lookup_expr = 'gte')
+
+    class Meta :
+      model = Question
+      fields = ('created_gte',)
+
 class QuestionView (generics.ListAPIView,
                     generics.CreateAPIView,
                     generics.UpdateAPIView) :
   serializer_class = QuestionSerializer
-  filter_backends = (filters.OrderingFilter,)
+  #filter_backends = (OrderingFilter,)
   ordering_fields = ('created', 'active', 'net_votes')
   allowed_filters = ['id', 'author', 'permlink']
-
-  def get_queryset (self) :
-    queryset = Question.objects.all()
-    for f in self.allowed_filters:
-      if f in self.request.query_params :
-        queryset = queryset.filter(**{f: self.request.query_params[f]})
-
-    return queryset
+  filter_backends = (rest_framework.DjangoFilterBackend, OrderingFilter,)
+  filter_class = QuestionFilter
+  queryset = Question.objects.all()
 
   def get_object (self) :
     queryset = Question.objects.all()
@@ -341,7 +348,7 @@ class AnswerView (generics.ListAPIView,
                     generics.CreateAPIView,
                     generics.UpdateAPIView) :
   serializer_class = AnswerSerializer
-  filter_backends = (filters.OrderingFilter,)
+  filter_backends = (OrderingFilter,)
   ordering_fields = ('active',)
   allowed_filters = ['id', 'author', 'permlink']
 

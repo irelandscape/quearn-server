@@ -20,6 +20,12 @@ class Config (models.Model) :
     blank = True,
     null = True)
 
+  carousel_history = models.PositiveIntegerField (
+    help_text = 'Time period (in days) to report top questions in carousel',
+    default = 7,
+    blank = True,
+    null = True)
+
 class Scraper (models.Model) :
   nodes = models.TextField (
     help_text = 'The steem nodes to use (in order of priority)',
