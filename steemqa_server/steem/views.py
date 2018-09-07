@@ -270,7 +270,7 @@ class QuestionView (generics.ListAPIView,
                     generics.UpdateAPIView) :
   serializer_class = QuestionSerializer
   filter_backends = (filters.OrderingFilter,)
-  ordering_fields = ('active',)
+  ordering_fields = ('created', 'active',)
   allowed_filters = ['id', 'author', 'permlink']
 
   def get_queryset (self) :
