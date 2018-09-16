@@ -408,6 +408,15 @@ def answer_count (request) :
   }, 
   safe = False)
 
+class QuestionGetDetails (generics.RetrieveAPIView) :
+  queryset = Question.objects.all()
+  serializer_class = QuestionSerializer
+
+
+class QuestionItem (BaseManageView) :
+  VIEWS_BY_METHOD = {
+    'GET': QuestionGetDetails.as_view,
+  }
 
 class NewQuestion (generics.CreateAPIView) :
   @check_user
@@ -470,3 +479,53 @@ class NewAnswer (generics.CreateAPIView) :
       tag5 = request.data['tags'][4] if len(request.data['tags']) >= 5 else None)
     answer.save()
     return HttpResponse(status=204)
+
+class BookmarkList (generics.ListAPIView) :
+  queryset = Bookmark.objects.all()
+  serializer_class = BookmarkSerializer
+
+  @check_user
+  def get_queryset (self, user = None) :
+    return Bookmark.objects.filter(user = user)
+
+class BookmarkPost (generics.CreateAPIView) :
+  queryset = Bookmark.objects.all()
+  serializer_class = BookmarkSerializer
+
+  @check_user
+  def post (self, request, *args, **kwargs) :
+    request.data['user'] = kwargs['user'].id
+    return self.create(request, *args, **kwargs)
+
+class BookmarkDelete (generics.DestroyAPIView):
+  queryset = Bookmark.objects.all()
+  serializer_class = BookmarkSerializer
+
+  @check_user
+  def delete (self, request, pk, format = None, **kwargs) :
+    bookmark = Bookmark.objects.get(pk = pk)
+    if bookmark.user.id == kwargs['user'].id :
+      bookmark.delete()
+      return HttpResponse(status=204)
+    else :
+      return HttpResponse(status=403)
+
+class BookmarkList (BaseManageView) :
+  VIEWS_BY_METHOD = {
+    'GET': BookmarkList.as_view,
+    'POST': BookmarkPost.as_view,
+  }
+
+class BookmarkGetDetails (generics.RetrieveAPIView) :
+  queryset = Bookmark.objects.all()
+  serializer_class = BookmarkSerializer
+
+  @check_user
+  def get_queryset (self, *args, **kwargs) :
+    return Bookmark.objects.filter(user = kwargs['user'].id) 
+
+class BookmarkItem (BaseManageView) :
+  VIEWS_BY_METHOD = {
+    'GET': BookmarkGetDetails.as_view,
+    'DELETE': BookmarkDelete.as_view,
+  }

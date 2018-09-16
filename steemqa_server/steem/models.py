@@ -167,3 +167,9 @@ class Answer (Discussion) :
     Question,
     on_delete=models.CASCADE)
 
+class Bookmark (models.Model) :
+  user = models.ForeignKey(SteemUser,
+    on_delete=models.CASCADE)
+
+  question = models.ForeignKey(Question,
+    on_delete=models.CASCADE)

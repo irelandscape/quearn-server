@@ -61,3 +61,8 @@ class AnswerSerializer (serializers.ModelSerializer) :
   class Meta :
     model = Answer
     fields = '__all__'
+
+class BookmarkSerializer (serializers.ModelSerializer) :
+  class Meta :
+    model = Bookmark
+    fields = '__all__'

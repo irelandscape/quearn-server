@@ -10,9 +10,12 @@ urlpatterns = [
   url(r'^scrapers/$', views.ScraperList.as_view()),
   url(r'^scrapers/(?P<pk>[0-9]+)/$', views.ScraperItem.as_view()),
   url(r'^questions/$', views.QuestionView.as_view()),
+  url(r'^questions/(?P<pk>[0-9]+)/$', views.QuestionItem.as_view()),
   url(r'^questions/count$', views.question_count),
   url(r'^newquestion$', views.NewQuestion.as_view()),
   url(r'^answers/$', views.AnswerView.as_view()),
   url(r'^answers/count$', views.answer_count),
   url(r'^newanswer$', views.NewAnswer.as_view()),
+  url(r'^bookmarks/$', views.BookmarkList.as_view()),
+  url(r'^bookmarks/(?P<pk>[0-9]+)/$', views.BookmarkItem.as_view()),
 ]
