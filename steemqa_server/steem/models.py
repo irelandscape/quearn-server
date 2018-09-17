@@ -26,6 +26,17 @@ class Config (models.Model) :
     blank = True,
     null = True)
 
+  initial_slides_count = models.PositiveIntegerField (
+    help_text = 'Number of initial slides to load in a slide swiper',
+    default = 10,
+    blank = True,
+    null = True)
+  new_slides_count = models.PositiveIntegerField (
+    help_text = 'Number of slides to load in the background when reaching the end of a slide swiper',
+    default = 3,
+    blank = True,
+    null = True)
+
 class Scraper (models.Model) :
   nodes = models.TextField (
     help_text = 'The steem nodes to use (in order of priority)',
