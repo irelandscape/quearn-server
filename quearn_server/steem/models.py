@@ -36,6 +36,11 @@ class Config (models.Model) :
     default = 3,
     blank = True,
     null = True)
+  initial_grid_batch_size = models.PositiveIntegerField (
+    help_text = 'Number of elements to load into a card grid',
+    default = 20,
+    blank = True,
+    null = True)
 
 class Scraper (models.Model) :
   nodes = models.TextField (

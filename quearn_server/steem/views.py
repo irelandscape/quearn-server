@@ -8,7 +8,7 @@ from rest_framework.parsers import JSONParser
 from steem.models import *
 from steem.serializers import *
 from steemconnect.client import Client
-from steemqa_server.settings import STEEMCONNECT_CLIENT_ID
+from quearn_server.settings import STEEMCONNECT_CLIENT_ID
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 from rest_framework import generics
