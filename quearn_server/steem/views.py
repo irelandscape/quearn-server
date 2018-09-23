@@ -275,7 +275,7 @@ class QuestionFilter (rest_framework.FilterSet) :
 
     class Meta :
       model = Question
-      fields = ('created_gte',)
+      fields = ('created_gte', 'topic',)
 
 class QuestionView (generics.ListAPIView,
                     generics.CreateAPIView,
@@ -283,7 +283,7 @@ class QuestionView (generics.ListAPIView,
   serializer_class = QuestionSerializer
   #filter_backends = (OrderingFilter,)
   ordering_fields = ('created', 'active', 'net_votes')
-  allowed_filters = ['id', 'author', 'permlink']
+  allowed_filters = ['id', 'author', 'permlink', 'topic']
   filter_backends = (rest_framework.DjangoFilterBackend, OrderingFilter,)
   filter_class = QuestionFilter
   queryset = Question.objects.all()
@@ -411,6 +411,8 @@ def answer_count (request) :
 class QuestionGetDetails (generics.RetrieveAPIView) :
   queryset = Question.objects.all()
   serializer_class = QuestionSerializer
+  allowed_filters = ['id', 'author', 'permlink', 'topic']
+
 
 
 class QuestionItem (BaseManageView) :
