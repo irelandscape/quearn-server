@@ -175,6 +175,7 @@ class Question (Discussion) :
     on_delete=models.CASCADE)
 
   answer_count = models.PositiveIntegerField (
+    default = 0,
     blank = True,
     null = True)
 
