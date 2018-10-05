@@ -10,6 +10,11 @@ class Config (models.Model) :
     blank = True,
     null = True)
 
+  subtitle = models.CharField (
+    max_length = 80,
+    blank = True,
+    null = True)
+
   tag = models.CharField (
     help_text = 'The main SteemQA application tag',
     max_length = MAX_TAG_LENGTH)
