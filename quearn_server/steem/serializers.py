@@ -6,6 +6,11 @@ class ConfigSerializer (serializers.ModelSerializer) :
     model = Config
     fields = '__all__'
 
+class HelpSerializer (serializers.ModelSerializer) :
+  class Meta :
+    model = Help
+    fields = '__all__'
+
 class ScraperSerializer (serializers.ModelSerializer) :
   class Meta :
     model = Scraper

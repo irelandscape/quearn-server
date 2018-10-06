@@ -7,6 +7,7 @@ urlpatterns = [
   url(r'^favourite_topics/(?P<pk>[0-9]+)/$', views.FavouriteTopicItem.as_view()),
   url(r'^topics/$', views.topic),
   url(r'^configs/$', views.ConfigList.as_view()),
+  url(r'^help/$', views.HelpView.as_view()),
   url(r'^scrapers/$', views.ScraperList.as_view()),
   url(r'^scrapers/(?P<pk>[0-9]+)/$', views.ScraperItem.as_view()),
   url(r'^questions/$', views.QuestionView.as_view()),

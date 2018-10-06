@@ -220,6 +220,18 @@ class ConfigList (BaseManageView) :
     'GET': ConfigGetList.as_view
   }
 
+class HelpView (generics.ListAPIView) :
+  serializer_class = HelpSerializer
+  allowed_filters = ['lang']
+
+  def get_queryset (self) :
+    queryset = Help.objects.all()
+    for f in self.allowed_filters:
+      if f in self.request.query_params :
+        queryset = queryset.filter(**{f: self.request.query_params[f]})
+
+    return queryset
+
 class FavouriteTopicList (BaseManageView) :
   VIEWS_BY_METHOD = {
     'GET': FavouriteTopicGetList.as_view,

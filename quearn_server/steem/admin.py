@@ -3,6 +3,7 @@ from .models import *
 
 # Register your models here.
 admin.site.register(Config)
+admin.site.register(Help)
 admin.site.register(Scraper)
 admin.site.register(SteemUser)
 admin.site.register(Topic)

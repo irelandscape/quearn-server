@@ -4,6 +4,17 @@ from django.db.models.signals import post_save, post_delete
 
 MAX_TAG_LENGTH = 40
 
+class Help (models.Model) :
+  lang = models.CharField (
+    max_length = 80,
+    blank = True,
+    null = True)
+
+  markdown = models.TextField (
+    blank = True,
+    null = True
+  )
+
 class Config (models.Model) :
   appName = models.CharField (
     max_length = 40,
