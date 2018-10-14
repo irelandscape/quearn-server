@@ -356,13 +356,24 @@ class FavouriteTopicPost (generics.CreateAPIView) :
     request.data['user'] = kwargs['user'].id
     return self.create(request, *args, **kwargs)
 
+class AnswerFilter (rest_framework.FilterSet) :
+    created_gte = django_filters.IsoDateTimeFilter(
+      field_name = 'created',
+      lookup_expr = 'gte')
+
+    class Meta :
+      model = Answer
+      fields = ('created_gte', 'question_id', 'author')
+
 class AnswerView (generics.ListAPIView,
                     generics.CreateAPIView,
                     generics.UpdateAPIView) :
   serializer_class = AnswerSerializer
   filter_backends = (OrderingFilter,)
-  ordering_fields = ('active',)
-  allowed_filters = ['id', 'author', 'permlink']
+  ordering_fields = ('net_votes', 'active',)
+  filter_class = AnswerFilter
+  queryset = Answer.objects.all()
+  allowed_filters = ['id', 'question']
 
   def get_queryset (self) :
     queryset = Answer.objects.all()

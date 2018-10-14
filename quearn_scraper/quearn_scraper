@@ -14,8 +14,8 @@ from beem import blockchain
 from beem.comment import Comment
 from datetime import datetime
 
-STEEMQA_REST_API_URL = '127.0.0.1:8000'
-STEEMQA_REST_API_USE_HTTPS = False
+QUEARN_REST_API_URL = '127.0.0.1:8000'
+QUEARN_REST_API_USE_HTTPS = False
 
 class Scraper :
   def __init__ (self,
@@ -224,14 +224,14 @@ if __name__ == '__main__' :
 
   #try :
   #  scraper = Scraper(logger,
-  #                    STEEMQA_REST_API_URL,
-  #                    STEEMQA_REST_API_USE_HTTPS)
+  #                    QUEARN_REST_API_URL,
+  #                    QUEARN_REST_API_USE_HTTPS)
   #  scraper.run()
   #except :
   #  logger.exception('EXCEPTION:')
   scraper = Scraper(logger,
-                    STEEMQA_REST_API_URL,
-                    STEEMQA_REST_API_USE_HTTPS)
+                    QUEARN_REST_API_URL,
+                    QUEARN_REST_API_USE_HTTPS)
   scraper.run()
 
 

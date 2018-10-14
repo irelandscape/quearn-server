@@ -42,19 +42,32 @@ class Config (models.Model) :
     blank = True,
     null = True)
 
+  home_blog_history = models.PositiveIntegerField (
+    help_text = 'Time period (in days) to report questions and answers on the home page',
+    default = 7,
+    blank = True,
+    null = True)
+
   initial_slides_count = models.PositiveIntegerField (
     help_text = 'Number of initial slides to load in a slide swiper',
     default = 10,
     blank = True,
     null = True)
+
   new_slides_count = models.PositiveIntegerField (
     help_text = 'Number of slides to load in the background when reaching the end of a slide swiper',
     default = 3,
     blank = True,
     null = True)
+
   initial_grid_batch_size = models.PositiveIntegerField (
     help_text = 'Number of elements to load into a card grid',
     default = 20,
+    blank = True,
+    null = True)
+
+  post_addon_msg = models.TextField (
+    help_text = 'A message that will be added to the end of each question/answer post and visible only when displayed on an external app',
     blank = True,
     null = True)
 
