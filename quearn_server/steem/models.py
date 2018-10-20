@@ -192,6 +192,10 @@ class Discussion (models.Model) :
     help_text = 'Tracks the total payout (in SBD) this content has received over time',
     default = 0)
 
+  flagged = models.BooleanField (
+    help_text = 'Indicates if this post has been flagged',
+    default = False)
+
   class Meta :
     abstract = True
 

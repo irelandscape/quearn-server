@@ -298,10 +298,10 @@ class QuestionView (generics.ListAPIView,
   allowed_filters = ['id', 'author', 'permlink', 'topic', 'answer_count']
   filter_backends = (rest_framework.DjangoFilterBackend, OrderingFilter,)
   filter_class = QuestionFilter
-  queryset = Question.objects.all()
+  queryset = Question.objects.filter(flagged = False)
 
   def get_object (self) :
-    queryset = Question.objects.all()
+    queryset = Question.objects.filter(flagged = False)
     for f in self.allowed_filters:
       if f in self.request.query_params :
         queryset = queryset.filter(**{f: self.request.query_params[f]})
@@ -372,11 +372,11 @@ class AnswerView (generics.ListAPIView,
   filter_backends = (OrderingFilter,)
   ordering_fields = ('net_votes', 'active',)
   filter_class = AnswerFilter
-  queryset = Answer.objects.all()
+  queryset = Answer.objects.filter(flagged = False)
   allowed_filters = ['id', 'question']
 
   def get_queryset (self) :
-    queryset = Answer.objects.all()
+    queryset = Answer.objects.filter(flagged = False)
     for f in self.allowed_filters:
       if f in self.request.query_params :
         queryset = queryset.filter(**{f: self.request.query_params[f]})
@@ -384,7 +384,7 @@ class AnswerView (generics.ListAPIView,
     return queryset
 
   def get_object (self) :
-    queryset = Answer.objects.all()
+    queryset = Answer.objects.filter(flagged = False)
     for f in self.allowed_filters:
       if f in self.request.query_params :
         queryset = queryset.filter(**{f: self.request.query_params[f]})
