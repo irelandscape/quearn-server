@@ -71,6 +71,13 @@ class Config (models.Model) :
     blank = True,
     null = True)
 
+  news_sources = models.TextField (
+    max_length = 256,
+    help_text = 'A comma separated list of [username]:[tag] values to identify the news sources',
+    blank = True,
+    null = True
+  )
+
 class Scraper (models.Model) :
   nodes = models.TextField (
     help_text = 'The steem nodes to use (in order of priority)',
