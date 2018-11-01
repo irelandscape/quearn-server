@@ -14,7 +14,7 @@ from beem import blockchain
 from beem.comment import Comment
 from datetime import datetime
 
-QUEARN_REST_API_URL = '127.0.0.1:8000'
+QUEARN_REST_API_URL = '127.0.0.1:8001'
 QUEARN_REST_API_USE_HTTPS = False
 
 class Scraper :

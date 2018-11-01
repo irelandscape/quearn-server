@@ -1,4 +1,4 @@
-#!/home/odeme/steemqa-server/env/bin/python
+#!/var/quearn-server/env/bin/python
 
 import sys
 import getopt
