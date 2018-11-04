@@ -23,7 +23,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '_h+3c$xvv!ddi3jgb6yb1^p0t11_w*%f2#s$g&=g*cqg)kluh3'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['www.stemq.io',
   '127.0.0.1',
@@ -136,6 +136,7 @@ STEEMCONNECT_CLIENT_ID = 'quearn-io'
 CORS_ORIGIN_ALLOW_ALL = DEBUG
 CORS_ORIGIN_WHITELIST = (
     'localhost:8080',
+    'www.stemq.io',
 )
 
 REST_FRAMEWORK = {
