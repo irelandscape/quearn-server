@@ -55,7 +55,7 @@ class Scraper :
         self._update_block_nbr(op['block_num'])
         continue
 
-      if 'tags' not in json_metadata :
+      if json_metadata is None or 'tags' not in json_metadata :
         self._update_block_nbr(op['block_num'])
         continue
 
