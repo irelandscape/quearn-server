@@ -14,7 +14,7 @@ from beem import blockchain
 from beem.comment import Comment
 from datetime import datetime
 
-QUEARN_REST_API_URL = '127.0.0.1:8000'
+QUEARN_REST_API_URL = '127.0.0.1:8001'
 QUEARN_REST_API_USE_HTTPS = False
 
 class Scraper :
@@ -132,8 +132,8 @@ class Scraper :
       sys.exit(-1)
 
     activity = None
-    if len(q_activity) > 0 :
-      activity = dateparser.parse(q_activity[0]['active'])
+    if len(q_activity['results']) > 0 :
+      activity = dateparser.parse(q_activity['results'][0]['active'])
 
     rc, a_activity = self._get('answers',
       filters = {
@@ -144,8 +144,8 @@ class Scraper :
       sys.exit(-1)
 
     activity2 = None
-    if len(a_activity) > 0 :
-      activity2 = dateparser.parse(a_activity[0]['active'])
+    if len(a_activity['results']) > 0 :
+      activity2 = dateparser.parse(a_activity['results'][0]['active'])
 
     if activity == None :
       self.latest_activity = activity2
@@ -233,18 +233,3 @@ if __name__ == '__main__' :
                     QUEARN_REST_API_URL,
                     QUEARN_REST_API_USE_HTTPS)
   scraper.run()
-
-
-  #q = discussions.Query(limit = 5, tag = 'steemstem')
-  #for h in discussions.Discussions_by_created(q) :
-  #  author = h.author
-  #  permlink = h.permlink
-  #  print(h)
-
-  #print('AND...')
-  #q = discussions.Query(limit = 5, 
-  #                      tag = 'steemstem',
-  #                      start_author = author,
-  #                      start_permlink = permlink)
-  #for h in discussions.Discussions_by_created(q) :
-  #  print(h)

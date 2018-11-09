@@ -1,0 +1,14 @@
+[Unit]
+Description=Quearn scraper
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=3
+ExecStart=/var/quearn-server/env/bin/python3 /var/quearn-server/quearn_scraper/quearn_scraper
+StandardOutput=syslog
+StandardError=syslog
+
+[Install]
+WantedBy=multi-user.target
+Alias=quearn_scraper.service
