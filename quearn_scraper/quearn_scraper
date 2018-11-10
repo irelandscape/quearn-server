@@ -48,14 +48,14 @@ class Scraper :
                            start = self.scraper['block_nbr']) :
       try :
         json_metadata = json.loads(op['json_metadata'])
-        if type(json_metadata) == type('') :
+        while type(json_metadata) == str :
           # Issue with beem?
           json_metadata = json.loads(json_metadata)
       except:
         self._update_block_nbr(op['block_num'])
         continue
 
-      if 'tags' not in json_metadata :
+      if json_metadata is None or 'tags' not in json_metadata :
         self._update_block_nbr(op['block_num'])
         continue
 
