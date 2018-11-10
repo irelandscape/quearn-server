@@ -27,6 +27,7 @@ DEBUG = False
 
 ALLOWED_HOSTS = ['www.stemq.io',
   '127.0.0.1',
+  '172.28.2.37',
   'localhost']
 
 
