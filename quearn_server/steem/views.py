@@ -344,7 +344,7 @@ class QuestionView (generics.ListAPIView,
         request.data.get('tag5', None)))
       if topic is not None :
         request.data['topic'] = topic.id
-    return self.update(request, args, kwargs)
+    return self.partial_update(request, args, kwargs)
 
 
 @csrf_exempt
@@ -429,7 +429,7 @@ class AnswerView (generics.ListAPIView,
         request.data.get('tag5', None)))
       if topic is not None :
         request.data['topic'] = topic.id
-    return self.update(request, args, kwargs)
+    return self.partial_update(request, args, kwargs)
 
 
 @csrf_exempt
