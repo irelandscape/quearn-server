@@ -378,7 +378,7 @@ class AnswerView (generics.ListAPIView,
                     generics.UpdateAPIView) :
   serializer_class = AnswerSerializer
   filter_backends = (OrderingFilter,)
-  ordering_fields = ('net_votes', 'active',)
+  ordering_fields = ('created', 'net_votes', 'active',)
   filter_class = AnswerFilter
   filter_backends = (rest_framework.DjangoFilterBackend, OrderingFilter,)
   queryset = Answer.objects.filter(flagged = False)
