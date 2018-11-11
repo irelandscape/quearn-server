@@ -402,15 +402,6 @@ class AnswerView (generics.ListAPIView,
       obj = queryset[0]
       self.check_object_permissions(self.request, obj)
     else :
-      if 'topic' not in self.request.data :
-        topic = AnswerSerializer.find_topic((self.request.data.get('tag1', None),
-          self.request.data.get('tag2', None),
-          self.request.data.get('tag3', None),
-          self.request.data.get('tag4', None),
-          self.request.data.get('tag5', None)))
-        if topic is None :
-          return None
-        self.request.data['topic'] = topic.id
       serializer = AnswerSerializer(data = self.request.data)
       if serializer.is_valid() :
         obj = serializer.save()
@@ -420,15 +411,6 @@ class AnswerView (generics.ListAPIView,
     return obj
 
   def put(self, request, *args, **kwargs) :
-    if 'topic' not in request.data :
-      print(request.data)
-      topic = QuestionSerializer.find_topic((request.data.get('tag1', None),
-        request.data.get('tag2', None),
-        request.data.get('tag3', None),
-        request.data.get('tag4', None),
-        request.data.get('tag5', None)))
-      if topic is not None :
-        request.data['topic'] = topic.id
     return self.partial_update(request, args, kwargs)
 
 
