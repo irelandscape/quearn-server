@@ -48,7 +48,7 @@ class Scraper :
                            start = self.scraper['block_nbr']) :
       try :
         json_metadata = json.loads(op['json_metadata'])
-        if type(json_metadata) == type('') :
+        while type(json_metadata) == str :
           # Issue with beem?
           json_metadata = json.loads(json_metadata)
       except:
@@ -191,6 +191,11 @@ class Scraper :
     response = rest_conn.getresponse()
     if response.status != 200 :
       self.logger.error('Failed to complete PUT request. Got status {}'.format(response.status))
+      if filters : 
+          self.logger.error('/{}/?{}'.format(mo, urllib.parse.urlencode(filters)))
+      else :
+          self.logger.error('/{}/'.format(mo))
+      self.logger.error(json.dumps(params))
 
     return response.status
 
