@@ -382,7 +382,7 @@ class AnswerView (generics.ListAPIView,
   filter_class = AnswerFilter
   filter_backends = (rest_framework.DjangoFilterBackend, OrderingFilter,)
   queryset = Answer.objects.filter(flagged = False)
-  allowed_filters = ['id', 'question']
+  allowed_filters = ['id', 'question', 'author', 'permlink']
 
   def get_queryset (self) :
     queryset = Answer.objects.filter(flagged = False)
