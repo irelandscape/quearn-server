@@ -43,12 +43,14 @@ class Scraper :
         })
 
   def run (self) :
-    re_question = re.compile('^(?!A *:).*?$')
+    re_question = re.compile('^(?!A *:).*\?$')
     re_answer = re.compile('^ *A *:.*')
 
     chain = blockchain.Blockchain()
     for op in chain.stream(opNames = ['comment'],
-                           start = self.scraper['block_nbr']) :
+                           start = self.scraper['block_nbr'],
+                           threading = True,
+                           thread_num = 8) :
       try :
         json_metadata = json.loads(op['json_metadata'])
         while type(json_metadata) == str :
