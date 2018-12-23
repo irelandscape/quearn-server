@@ -471,11 +471,6 @@ class NewAnswer (generics.CreateAPIView) :
         'title' not in request.data :
       return HttpResponse(status=400)
 
-    answers = Answer.objects.filter(author = kwargs['user'].username).filter(question__permlink = request.data['question_permlink']).filter(question__author = request.data['question_author'])
-
-    if len(answers) != 0 :
-        return HttpResponse(status=400) # User already answered this question
-
     questions = Question.objects.filter(permlink = request.data['question_permlink']).filter(author = request.data['question_author'])
     if len(questions) == 0 :
         return HttpResponse(status=400)
