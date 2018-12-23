@@ -294,7 +294,7 @@ class QuestionView (generics.ListAPIView,
                     generics.UpdateAPIView) :
   serializer_class = QuestionSerializer
   filter_backends = (OrderingFilter,)
-  ordering_fields = ('created', 'active', 'author_payout_value', 'net_votes', 'answer_count')
+  ordering_fields = ('created', 'active', 'total_payout_value', 'author_payout_value', 'net_votes', 'answer_count')
   allowed_filters = ['id', 'author', 'permlink', 'topic', 'answer_count']
   #filter_backends = (rest_framework.DjangoFilterBackend, OrderingFilter,)
   filter_class = QuestionFilter
@@ -377,7 +377,7 @@ class AnswerView (generics.ListAPIView,
                     generics.CreateAPIView,
                     generics.UpdateAPIView) :
   serializer_class = AnswerSerializer
-  ordering_fields = ('created', 'author_payout_value', 'net_votes', 'active',)
+  ordering_fields = ('created', 'total_payout_value', 'author_payout_value', 'net_votes', 'active',)
   filter_class = AnswerFilter
   filter_backends = (rest_framework.DjangoFilterBackend, OrderingFilter,)
   queryset = Answer.objects.filter(flagged = False)

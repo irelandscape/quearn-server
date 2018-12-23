@@ -90,7 +90,8 @@ class Scraper :
         'active': post['active'].isoformat(),
         'tag1': tags[0],
         'net_votes': len(post.get_votes()),
-        'author_payout_value': post.get_author_rewards()['total_payout_SBD'].amount
+        'author_payout_value': post.get_author_rewards()['total_payout_SBD'].amount,
+        'total_payout_value': post.get_rewards()['total_payout'].amount,
       }
       if len(tags) > 1 :
         params['tag2'] = tags[1]
