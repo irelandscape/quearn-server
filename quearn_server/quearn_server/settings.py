@@ -23,7 +23,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '_h+3c$xvv!ddi3jgb6yb1^p0t11_w*%f2#s$g&=g*cqg)kluh3'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['www.stemq.io',
   'api.stemq.io',
