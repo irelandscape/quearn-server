@@ -26,6 +26,7 @@ SECRET_KEY = '_h+3c$xvv!ddi3jgb6yb1^p0t11_w*%f2#s$g&=g*cqg)kluh3'
 DEBUG = False
 
 ALLOWED_HOSTS = ['www.stemq.io',
+  'api.stemq.io',
   '127.0.0.1',
   '172.28.2.37',
   'localhost']
@@ -50,7 +51,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    #'django.middleware.csrf.CsrfViewMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',

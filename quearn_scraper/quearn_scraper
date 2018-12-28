@@ -15,16 +15,19 @@ from beem.comment import Comment
 from datetime import datetime
 
 QUEARN_REST_API_URL = '127.0.0.1:8001'
+QUEARN_REST_API_PATH = '/api'
 QUEARN_REST_API_USE_HTTPS = False
 
 class Scraper :
   def __init__ (self,
                 logger,
                 rest_api_url,
+                rest_api_path,
                 rest_api_use_https) :
 
     self.logger = logger
     self.rest_api_url = rest_api_url
+    self.rest_api_path = rest_api_path
     self.rest_api_use_https = rest_api_use_https
 
     self._get_config()
@@ -40,12 +43,14 @@ class Scraper :
         })
 
   def run (self) :
-    re_question = re.compile('^(?!A *:).*?$')
+    re_question = re.compile('^(?!A *:).*\?$')
     re_answer = re.compile('^ *A *:.*')
 
     chain = blockchain.Blockchain()
     for op in chain.stream(opNames = ['comment'],
-                           start = self.scraper['block_nbr']) :
+                           start = self.scraper['block_nbr'],
+                           threading = True,
+                           thread_num = 8) :
       try :
         json_metadata = json.loads(op['json_metadata'])
         while type(json_metadata) == str :
@@ -85,7 +90,8 @@ class Scraper :
         'active': post['active'].isoformat(),
         'tag1': tags[0],
         'net_votes': len(post.get_votes()),
-        'author_payout_value': post.get_author_rewards()['total_payout_SBD'].amount
+        'author_payout_value': post.get_author_rewards()['total_payout_SBD'].amount,
+        'total_payout_value': post.get_rewards()['total_payout'].amount,
       }
       if len(tags) > 1 :
         params['tag2'] = tags[1]
@@ -161,9 +167,9 @@ class Scraper :
       rest_conn = http.client.HTTPConnection(self.rest_api_url, timeout = 5)
     if filters :
       rest_conn.request('GET', 
-                        '/{}/?{}'.format(mo, urllib.parse.urlencode(filters)))
+                        '{}/{}/?{}'.format(self.rest_api_path, mo, urllib.parse.urlencode(filters)))
     else :
-      rest_conn.request('GET', '/{}/'.format(mo))
+      rest_conn.request('GET', '{}/{}/'.format(self.rest_api_path, mo))
     response = rest_conn.getresponse()
     data = response.read().decode('utf-8')
     if response.status != 200 :
@@ -179,18 +185,23 @@ class Scraper :
     headers = {'Content-type': 'application/json'}
     if filters :
       rest_conn.request('PUT', 
-                        '/{}/?{}'.format(mo, urllib.parse.urlencode(filters)),
+                        '{}/{}/?{}'.format(self.rest_api_path, mo, urllib.parse.urlencode(filters)),
                         json.dumps(params),
                         headers)
     else :
       rest_conn.request('PUT', 
-                        '/{}/'.format(mo),
+                        '{}/{}/'.format(self.rest_api_path, mo),
                         json.dumps(params),
                         headers)
 
     response = rest_conn.getresponse()
     if response.status != 200 :
       self.logger.error('Failed to complete PUT request. Got status {}'.format(response.status))
+      if filters : 
+          self.logger.error('/{}/?{}'.format(mo, urllib.parse.urlencode(filters)))
+      else :
+          self.logger.error('/{}/'.format(mo))
+      self.logger.error(json.dumps(params))
 
     return response.status
 
@@ -202,7 +213,7 @@ class Scraper :
 
     headers = {'Content-type': 'application/json'}
     rest_conn.request('PATCH', 
-                      '/{}/{}/'.format(mo, pk),
+                      '{}/{}/{}/'.format(self.rest_api_path, mo, pk),
                       json.dumps(params),
                       headers)
 
@@ -231,5 +242,6 @@ if __name__ == '__main__' :
   #  logger.exception('EXCEPTION:')
   scraper = Scraper(logger,
                     QUEARN_REST_API_URL,
+                    QUEARN_REST_API_PATH,
                     QUEARN_REST_API_USE_HTTPS)
   scraper.run()

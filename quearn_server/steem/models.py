@@ -203,6 +203,10 @@ class Discussion (models.Model) :
     help_text = 'Indicates if this post has been flagged',
     default = False)
 
+  total_payout_value = models.FloatField (
+    help_text = 'Tracks the total payout this content has received over time, measured in the debt asset.',
+    default = 0)
+
   class Meta :
     abstract = True
 

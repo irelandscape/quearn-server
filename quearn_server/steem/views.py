@@ -294,7 +294,7 @@ class QuestionView (generics.ListAPIView,
                     generics.UpdateAPIView) :
   serializer_class = QuestionSerializer
   filter_backends = (OrderingFilter,)
-  ordering_fields = ('created', 'active', 'net_votes', 'answer_count')
+  ordering_fields = ('created', 'active', 'total_payout_value', 'author_payout_value', 'net_votes', 'answer_count')
   allowed_filters = ['id', 'author', 'permlink', 'topic', 'answer_count']
   #filter_backends = (rest_framework.DjangoFilterBackend, OrderingFilter,)
   filter_class = QuestionFilter
@@ -344,7 +344,7 @@ class QuestionView (generics.ListAPIView,
         request.data.get('tag5', None)))
       if topic is not None :
         request.data['topic'] = topic.id
-    return self.update(request, args, kwargs)
+    return self.partial_update(request, args, kwargs)
 
 
 @csrf_exempt
@@ -377,12 +377,11 @@ class AnswerView (generics.ListAPIView,
                     generics.CreateAPIView,
                     generics.UpdateAPIView) :
   serializer_class = AnswerSerializer
-  filter_backends = (OrderingFilter,)
-  ordering_fields = ('net_votes', 'active',)
+  ordering_fields = ('created', 'total_payout_value', 'author_payout_value', 'net_votes', 'active',)
   filter_class = AnswerFilter
   filter_backends = (rest_framework.DjangoFilterBackend, OrderingFilter,)
   queryset = Answer.objects.filter(flagged = False)
-  allowed_filters = ['id', 'question']
+  allowed_filters = ['id', 'question', 'author', 'permlink']
 
   def get_queryset (self) :
     queryset = Answer.objects.filter(flagged = False)
@@ -402,15 +401,6 @@ class AnswerView (generics.ListAPIView,
       obj = queryset[0]
       self.check_object_permissions(self.request, obj)
     else :
-      if 'topic' not in self.request.data :
-        topic = AnswerSerializer.find_topic((self.request.data.get('tag1', None),
-          self.request.data.get('tag2', None),
-          self.request.data.get('tag3', None),
-          self.request.data.get('tag4', None),
-          self.request.data.get('tag5', None)))
-        if topic is None :
-          return None
-        self.request.data['topic'] = topic.id
       serializer = AnswerSerializer(data = self.request.data)
       if serializer.is_valid() :
         obj = serializer.save()
@@ -420,16 +410,7 @@ class AnswerView (generics.ListAPIView,
     return obj
 
   def put(self, request, *args, **kwargs) :
-    if 'topic' not in request.data :
-      print(request.data)
-      topic = QuestionSerializer.find_topic((request.data.get('tag1', None),
-        request.data.get('tag2', None),
-        request.data.get('tag3', None),
-        request.data.get('tag4', None),
-        request.data.get('tag5', None)))
-      if topic is not None :
-        request.data['topic'] = topic.id
-    return self.update(request, args, kwargs)
+    return self.partial_update(request, args, kwargs)
 
 
 @csrf_exempt
@@ -489,11 +470,6 @@ class NewAnswer (generics.CreateAPIView) :
         'tags' not in request.data or \
         'title' not in request.data :
       return HttpResponse(status=400)
-
-    answers = Answer.objects.filter(author = kwargs['user'].username).filter(question__permlink = request.data['question_permlink']).filter(question__author = request.data['question_author'])
-
-    if len(answers) != 0 :
-        return HttpResponse(status=400) # User already answered this question
 
     questions = Question.objects.filter(permlink = request.data['question_permlink']).filter(author = request.data['question_author'])
     if len(questions) == 0 :
