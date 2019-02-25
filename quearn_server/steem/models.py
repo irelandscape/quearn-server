@@ -78,6 +78,11 @@ class Config (models.Model) :
     null = True
   )
 
+  default_tags = models.TextField (
+    help_text = 'A comma separated list of default tags to offer to the user',
+    blank = True,
+    null = True)
+
 class Scraper (models.Model) :
   nodes = models.TextField (
     help_text = 'The steem nodes to use (in order of priority)',
