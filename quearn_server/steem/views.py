@@ -7,7 +7,7 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
 from steem.models import *
 from steem.serializers import *
-from steemconnect.client import Client
+import beem
 from quearn_server.settings import STEEMCONNECT_CLIENT_ID
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
@@ -20,62 +20,62 @@ from datetime import datetime
 import django_filters
 from django_filters import rest_framework
 
-def sha512 (token) :
-  hash = hashlib.sha512(token.encode('utf-8'))
+def sha512 (posting_key) :
+  hash = hashlib.sha512(posting_key.encode('utf-8'))
   return hash.hexdigest()
+
+def pkIsValid (username, posting_key) :
+  stm = beem.Steem()
+  try :
+    username2 = stm.wallet.getAccountFromPrivateKey(posting_key)
+  except :
+    return False
+
+  if username2 != username :
+    # Wrong username / access_pk pair
+    return False
+
+  return True
 
 def check_user (func) :
   def wrapper (self, *args, **kwargs) :
     username = ''
-    access_token = ''
+    posting_key = ''
     request = self.request
     if request.method == 'GET' or request.method == 'DELETE':
       if 'username' in request.GET :
         username = request.GET['username']
-      if 'access_token' in request.GET :
-        access_token = request.GET['access_token']
+      if 'posting_key' in request.GET :
+        posting_key = request.GET['posting_key']
     else :
       if 'username' in request.data :
         username = request.data['username']
-      if 'access_token' in request.data :
-        access_token = request.data['access_token']
+      if 'posting_key' in request.data :
+        posting_key = request.data['posting_key']
 
-    if username == '' or access_token == '' :
+    if username == '' or posting_key == '' :
       raise PermissionDenied
 
-    token = AccessToken.objects.filter(username = username)
-
-    if len(token) == 0 or token[0].token != sha512(access_token) :
-      # Validate access token with Steemconnect
-      c = Client(access_token = access_token)
-
-      try: 
-        user = c.me()
-      except:
-        return HttpResponse(status=503)
-
-      if user['user'] != username :
-        # Wrong username / access_token pair
-        raise PermissionDenied
-
-      if len(token) == 0 :
-        token = AccessToken(username = username,
-                            token = sha512(access_token))
-        token.save()
-      else :
-        # Access token was updated
-        token.update(token = sha512(access_token))
-
-    # User is valid, do we need to create a new SteemUser object?
     users = SteemUser.objects.filter(username = username)
-    if len(users) == 0 :
-      user = SteemUser(username = username)
-      user.save()
-    else :
+
+    if len(users) :
+      if users[0].posting_key == sha512(posting_key) :
+        # User is valid
+        kwargs['user'] = users[0]
+        return func(self, *args, **kwargs)
+
+    if not pkIsValid(username, posting_key) :
+      raise PermissionDenied
+
+    if len(users) :
+      # Access posting_key was updated
+      users[0].posting_key = sha512(posting_key)
       user = users[0]
+    else :
+      user = SteemUser(username = username, posting_key = sha512(posting_key))
+    user.save()
 
     kwargs['user'] = user
-
     return func(self, *args, **kwargs)
   return wrapper
 

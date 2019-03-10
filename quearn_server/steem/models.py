@@ -83,6 +83,11 @@ class Config (models.Model) :
     blank = True,
     null = True)
 
+  steemlogin_auth_url = models.CharField (
+    max_length = 256,
+    help_text = 'SteemLogin authentication URL',
+    default = 'https://auth.steemlogin.net')
+
 class Scraper (models.Model) :
   nodes = models.TextField (
     help_text = 'The steem nodes to use (in order of priority)',
@@ -95,30 +100,19 @@ class Scraper (models.Model) :
 
 class SteemUser (models.Model) :
   created = models.DateTimeField(auto_now_add=True)
-
+  
   username = models.CharField(
     max_length = 40,
     db_index = True)
 
-  class Meta:
-    ordering = ('username',)
-
-  def __str__ (self) :
-    return self.username
-
-class AccessToken (models.Model) :
-  username = models.CharField(
-    max_length = 40,
-    db_index = True)
-
-  token = models.CharField(
-    help_text = 'SHA-512 encrypted version of Steemconnect access token',
+  posting_key = models.CharField(
+    help_text = 'SHA-512 encrypted version of posting key',
     max_length = 160,
-    db_index = True)
+    blank = True,
+    null = True)
 
   class Meta:
     ordering = ('username',)
-
 
 class Topic (models.Model) :
   topic = models.CharField(
