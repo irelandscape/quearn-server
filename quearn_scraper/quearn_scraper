@@ -82,12 +82,15 @@ class Scraper :
       self.logger.debug('Processing {} / {}'.format(op['author'], op['permlink']))
       post = Comment("@{}/{}".format(op['author'], op['permlink']))
 
+      active = post['created'].isoformat()
+      if 'active' in post :
+          active = post['active'].isoformat()
       params = {
         'created': post['created'].isoformat(),
         'author': post.author,
         'title': title,
         'permlink': post.permlink,
-        'active': post['active'].isoformat(),
+        'active': active,
         'tag1': tags[0],
         'net_votes': len(post.get_votes()),
         'author_payout_value': post.get_author_rewards()['total_payout_SBD'].amount,
