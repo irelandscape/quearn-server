@@ -88,6 +88,34 @@ class Config (models.Model) :
     help_text = 'SteemLogin authentication URL',
     default = 'https://auth.steemlogin.net')
 
+  url = models.URLField (
+    help_text = 'The canonical URL for your website that will be indicated in external link previews',
+    blank = True,
+    null = True)
+
+  site_name = models.CharField (
+    max_length = 40,
+    help_text = 'Your site name, will be shown in external link previews',
+    blank = True,
+    null = True)
+
+  title = models.CharField (
+    max_length = 80,
+    help_text = 'A short title for this web site',
+    blank = True,
+    null = True)
+
+  description = models.CharField (
+    max_length = 80,
+    help_text = 'A one to two sentence description for your website',
+    blank = True,
+    null = True)
+
+  image = models.URLField (
+    help_text = 'The URL to a screenshot of your site which will be shown in external link previews',
+    blank = True,
+    null = True)
+
 class Scraper (models.Model) :
   nodes = models.TextField (
     help_text = 'The steem nodes to use (in order of priority)',
