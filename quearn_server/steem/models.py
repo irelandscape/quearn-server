@@ -116,6 +116,10 @@ class Config (models.Model) :
     blank = True,
     null = True)
 
+  session_expiration = models.PositiveIntegerField (
+        help_text = 'Amount of time (in seconds) before user is automatically logged out',
+        default = 3600 * 48)
+
 class Scraper (models.Model) :
   nodes = models.TextField (
     help_text = 'The steem nodes to use (in order of priority)',
