@@ -26,5 +26,5 @@ scrypt==0.8.6
 six==1.11.0
 steemconnect==0.0.4
 tzlocal==1.5.1
-urllib3==1.23
+urllib3==1.26.5
 websocket-client==0.51.0
